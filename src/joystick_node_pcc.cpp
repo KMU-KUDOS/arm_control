@@ -49,7 +49,7 @@ public:
         joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>(
             "/joy", 10, std::bind(&JoystickToRMDControl::joy_callback, this, std::placeholders::_1));
 
-        can_socket_ = open_can_socket("can10");  // CAN 소켓 열기
+        can_socket_ = open_can_socket("can13");  // CAN 소켓 열기
         if (can_socket_ < 0) {
             RCLCPP_FATAL(this->get_logger(), "Failed to open CAN socket. Exiting...");
             rclcpp::shutdown();

@@ -43,7 +43,7 @@ public:
         joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>(
             "/joy", 10, std::bind(&JoystickToRMDControl::joy_callback, this, std::placeholders::_1));
 
-        can_socket_0_ = open_can_socket("can12");
+        //can_socket_0_ = open_can_socket("can12");
         can_socket_1_ = open_can_socket("can13");
         
 
