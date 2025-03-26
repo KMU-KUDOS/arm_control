@@ -138,10 +138,10 @@ public:
         joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>(
             "/joy", rclcpp::QoS(1).best_effort(), std::bind(&JoystickToRMDControl::joy_callback, this, std::placeholders::_1));
 
-        //can_socket_10_ = open_can_socket("can10");
-        //can_socket_11_ = open_can_socket("can11");
+        can_socket_10_ = open_can_socket("can10");
+        can_socket_11_ = open_can_socket("can11");
         can_socket_12_ = open_can_socket("can12");
-        //can_socket_13_ = open_can_socket("can13");
+        can_socket_13_ = open_can_socket("can13");
 
         if (can_sockets_ok()) {
             RCLCPP_INFO(this->get_logger(), "CAN sockets opened successfully.");
@@ -219,10 +219,10 @@ private:
     void send_startup_raw_frames(RMD_COMMAND& rmd) {
         uint32_t raw_can_id1 = 0x141;
         uint32_t raw_can_id2 = 0x142;
-        std::vector<uint8_t> raw_can_data_initial_pos = {0xA4, 0x00, 0x96, 0x02, 0x00, 0x00, 0x00, 0x00};
+        std::vector<uint8_t> raw_can_data_initial_pos = {0xA4, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00};
 
         if (can_sockets_ok()) {
-            rmd.SEND_RAW_FRAME(can_socket_10_, raw_can_id1, raw_can_data_initial_pos);
+           rmd.SEND_RAW_FRAME(can_socket_10_, raw_can_id1, raw_can_data_initial_pos);
             rmd.SEND_RAW_FRAME(can_socket_10_, raw_can_id2, raw_can_data_initial_pos);
             rmd.SEND_RAW_FRAME(can_socket_11_, raw_can_id1, raw_can_data_initial_pos);
             rmd.SEND_RAW_FRAME(can_socket_11_, raw_can_id2, raw_can_data_initial_pos);
@@ -231,7 +231,8 @@ private:
             rmd.SEND_RAW_FRAME(can_socket_13_, raw_can_id1, raw_can_data_initial_pos);
             rmd.SEND_RAW_FRAME(can_socket_13_, raw_can_id2, raw_can_data_initial_pos);
 
-            std::this_thread::sleep_for(5s);
+
+            std::this_thread::sleep_for(10s);
         }
     }
 
@@ -247,7 +248,7 @@ private:
 
     const uint16_t max_speed_scale_ = 240;
     const uint16_t min_max_speed_ = 0;
-    const float max_angle_scale_ = 37700.0;
+    const float max_angle_scale_ = 37800.0;  //37700
     const float min_angle_scale_ = 0;
 
     int axis_can10_motor1_;
@@ -389,7 +390,7 @@ private:
 
 
                     // CAN13 - Motor 1 (1-cos 적용)
-                    float joy_input_can13_motor1 = msg->axes[axis_can13_motor1_];
+                    float joy_input_can13_motor1 = 0.7 *  msg->axes[axis_can13_motor1_];
                     if (invert_can13_motor1_) joy_input_can13_motor1 *= -1.0;
                     uint16_t maxSpeed_can13_motor1 = calculate_max_speed(joy_input_can13_motor1);
                     dynamic_angle_scale = std::max(min_angle_scale_, max_angle_scale_ * std::abs(joy_input_can13_motor1));
@@ -399,8 +400,8 @@ private:
 
 
                     // CAN13 - Motor 2 (Combined Axes) (1-cos 적용)
-                    float joy_input_can13_motor2_axis2 = -0.5 * (msg->axes[axis_can13_motor2_combined_[0]] - 1);
-                    float joy_input_can13_motor2_axis5 = 0.5 * (msg->axes[axis_can13_motor2_combined_[1]] - 1);
+                    float joy_input_can13_motor2_axis2 = -0.1 * (msg->axes[axis_can13_motor2_combined_[0]] - 1);
+                    float joy_input_can13_motor2_axis5 = 0.1 * (msg->axes[axis_can13_motor2_combined_[1]] - 1);
                     float combined_joy_input_motor2 = joy_input_can13_motor2_axis2 + joy_input_can13_motor2_axis5;
                     if (invert_can13_motor2_) combined_joy_input_motor2 *= -1.0;
                     uint16_t maxSpeed_can13_motor2 = calculate_max_speed(combined_joy_input_motor2);
@@ -409,7 +410,7 @@ private:
                     target_angleControl_motors_[5] += angle_increment_can13_motor2;
 
                     // CAN12 - Motor 1 (1-cos 적용)
-                    float joy_input_can12_motor1 = msg->axes[axis_can12_motor1_];
+                    float joy_input_can12_motor1 = 0.7 *  msg->axes[axis_can12_motor1_];
                     if (invert_can12_motor1_) joy_input_can12_motor1 *= -1.0;
                     uint16_t maxSpeed_can12_motor1 = calculate_max_speed(joy_input_can12_motor1);
                     dynamic_angle_scale = std::max(min_angle_scale_, max_angle_scale_ * std::abs(joy_input_can12_motor1));
@@ -419,7 +420,7 @@ private:
 
 
                     // CAN12 - Motor 2 (1-cos 적용)
-                    float joy_input_can12_motor2 = msg->axes[axis_can12_motor2_];
+                    float joy_input_can12_motor2 =0.7 *  msg->axes[axis_can12_motor2_];
                     if (invert_can12_motor2_) joy_input_can12_motor2 *= -1.0;
                     uint16_t maxSpeed_can12_motor2 = calculate_max_speed(joy_input_can12_motor2);
                     dynamic_angle_scale = std::max(min_angle_scale_, max_angle_scale_ * std::abs(joy_input_can12_motor2));

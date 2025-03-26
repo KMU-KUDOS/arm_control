@@ -331,15 +331,16 @@ private:
         }
         return socket_fd;
     }
-    
+
     // 시작 시 Raw CAN 프레임 전송 (초기 위치 설정)
     void send_startup_raw_frames(RMD_COMMAND& rmd) {
         uint32_t raw_can_id1 = 0x141;
         uint32_t raw_can_id2 = 0x142;
-        std::vector<uint8_t> raw_can_data_initial_pos = {0xA4, 0x00, 0x54, 0x00, 0x00, 0x00, 0x00, 0x00};
+        std::vector<uint8_t> raw_can_data_initial_pos = {0xA4, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00};
 
         if (can_sockets_ok()) {
             // can10, can11 (RMD-X8 Pro) 초기화
+
             rmd.SEND_RAW_FRAME(can_socket_10_, raw_can_id1, raw_can_data_initial_pos);
             rmd.SEND_RAW_FRAME(can_socket_10_, raw_can_id2, raw_can_data_initial_pos);
             rmd.SEND_RAW_FRAME(can_socket_11_, raw_can_id1, raw_can_data_initial_pos);
@@ -351,7 +352,7 @@ private:
             rmd.SEND_RAW_FRAME(can_socket_13_, raw_can_id1, raw_can_data_initial_pos);
             rmd.SEND_RAW_FRAME(can_socket_13_, raw_can_id2, raw_can_data_initial_pos);
 
-            std::this_thread::sleep_for(5s); // 5초 대기
+            std::this_thread::sleep_for(10s); // 5초 대기
         }
     }
 // 메인 스레드 함수 (10ms 주기로 0x9C 커맨드 전송 및 토픽 발행)
@@ -443,7 +444,7 @@ private:
                                     process_motor_command(rmd, can_socket_11_, 1, current_angles_[2], max_speed_scale_, 2, false);
                                     process_motor_command(rmd, can_socket_11_, 2, -1 * current_angles_[2], max_speed_scale_, 2, false);
                                 }
-                                else if (motor_index == 4) process_motor_command(rmd, can_socket_12_, 1, current_angles_[4], max_speed_scale_, 4, true);
+                                else if (motor_index == 4) process_motor_command(rmd, can_socket_12_, 1, current_angles_[4], max_speed_scale_, 4, true); 
                                 else if (motor_index == 5) process_motor_command(rmd, can_socket_12_, 2, current_angles_[5], max_speed_scale_, 5, true);
                                 else if (motor_index == 6) process_motor_command(rmd, can_socket_13_, 1, current_angles_[6], max_speed_scale_, 6, true);
                                 else if (motor_index == 7) process_motor_command(rmd, can_socket_13_, 2, current_angles_[7], max_speed_scale_, 7, true);
